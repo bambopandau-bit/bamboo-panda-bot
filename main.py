@@ -44,26 +44,26 @@ async def social(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "📄 Whitepaper\nhttps://bambopandau-bit.github.io/whitepaper.pdf\n\n"
         "💬 Telegram\nhttps://t.me/bamboopanda_official\n\n"
         "❌ X\nhttps://x.com/BamboPanda_coin\n\n"
-        "ℹ️ Note: The website, whitepaper and X page content are currently inaccessible. Only the official Telegram channel is active, showing basic project info."
+        "ℹ️ Note: The website, whitepaper and X page content are currently inaccessible. Only the official Telegram channel is active."
     )
 
 async def roadmap(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🗺 Roadmap\n\n"
         "✅ Phase 1 — Completed\n"
-        "• Branding\n• Website\n• Whitepaper\n• Telegram\n• X\n\n"
+        "• Branding • Website • Whitepaper • Telegram • X\n\n"
         "⏳ Phase 2 — In Progress\n"
-        "• Community Growth\n• Marketing\n• Airdrop Campaign\n\n"
+        "• Community Growth • Marketing • Airdrop Campaign\n\n"
         "🔜 Phase 3 — Upcoming\n"
-        "• Token Launch\n• DEX Listing\n• CoinGecko\n• CoinMarketCap\n\n"
+        "• Token Launch • DEX Listing • CoinGecko • CoinMarketCap\n\n"
         "🔮 Phase 4 — Future Plans\n"
-        "• Partnerships\n• Staking\n• NFT Collection"
+        "• Partnerships • Staking • NFT Collection"
     )
 
 async def tokenomics(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "📊 Tokenomics\n\n"
-        "Total Supply: 10,000,000,000 BP\n"
+        "Total Supply: 1,000,000,000 BP\n"
         "Liquidity: 🔒 Locked\n"
         "Ownership: ✅ Renounced\n"
         "Taxes: 0%\n"
@@ -92,7 +92,7 @@ async def xp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def leaderboard(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🏆 Leaderboard\n\n"
-        "🥇 User1\n🥈 User2\n🥉 User3"
+        "🥇 User1 • 🥈 User2 • 🥉 User3"
     )
 
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -104,7 +104,6 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # ---------------------- WELCOME & MESSAGE COUNT ----------------------
-# Welcome new members (100% English)
 async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     for member in update.message.new_chat_members:
         name = member.first_name
@@ -113,7 +112,6 @@ async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE)
             "Please introduce yourself and follow the group rules!"
         )
 
-# Count messages sent by members
 async def count_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.is_bot:
         return
@@ -123,7 +121,6 @@ async def count_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         member_messages[user_id] = {"name": user_name, "count": 0}
     member_messages[user_id]["count"] += 1
 
-# Check your own message count
 async def my_posts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = str(update.effective_user.id)
     user_name = update.effective_user.first_name
@@ -133,7 +130,6 @@ async def my_posts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     else:
         await update.message.reply_text(f"📝 Hi {user_name}!\nYou haven't sent any messages in this group yet.")
 
-# Show most active members
 async def top_active(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not member_messages:
         await update.message.reply_text("📊 No message data yet. Please send a message first!")
@@ -148,12 +144,12 @@ async def top_active(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 # ---------------------- RUN THE BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: TOKEN variable not found in Railway settings!")
+        print("❌ ERROR: TOKEN variable not found! Please set it in Railway Variables.")
         return
 
     app = Application.builder().token(TOKEN).build()
 
-    # Add all command handlers
+    # Register all commands
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("social", social))
@@ -166,7 +162,7 @@ def main() -> None:
     app.add_handler(CommandHandler("myposts", my_posts))
     app.add_handler(CommandHandler("topactive", top_active))
 
-    # Add event handlers
+    # Register event handlers
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_member))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, count_message))
 
