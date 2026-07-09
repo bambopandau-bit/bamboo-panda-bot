@@ -10,6 +10,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🌐 Website: https://bambopandau-bit.github.io/\n"
         "❌ X: https://x.com/BamboPanda_coin"
     )
+    ()
 
 app = Application.builder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
