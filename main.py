@@ -2,11 +2,11 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
 
-# Get token from Railway variables
+# Get token from Railway environment variables
 TOKEN = os.getenv("TOKEN")
 
 # Store member message count
-pesan_anggota = {}
+member_messages = {}
 
 # ---------------------- MAIN COMMANDS ----------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -103,52 +103,57 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Admins will NEVER ask for your wallet seed phrase."
     )
 
-# ---------------------- WELCOME & COUNT FEATURES ----------------------
-# Welcome new member (English version)
-async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+# ---------------------- WELCOME & MESSAGE COUNT ----------------------
+# Welcome new members (100% English)
+async def welcome_new_member(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     for member in update.message.new_chat_members:
-        nama = member.first_name
+        name = member.first_name
         await update.message.reply_text(
-            f"👋 Hi {nama}!\nWelcome to the **Bamboo Panda** group 🐼\n"
+            f"👋 Hi {name}!\nWelcome to the **Bamboo Panda** community 🐼\n"
             "Please introduce yourself and follow the group rules!"
         )
 
-async def catat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+# Count messages sent by members
+async def count_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.is_bot:
         return
-    id_user = str(update.effective_user.id)
-    nama_user = update.effective_user.first_name
-    if id_user not in pesan_anggota:
-        pesan_anggota[id_user] = {"nama": nama_user, "jumlah": 0}
-    pesan_anggota[id_user]["jumlah"] += 1
+    user_id = str(update.effective_user.id)
+    user_name = update.effective_user.first_name
+    if user_id not in member_messages:
+        member_messages[user_id] = {"name": user_name, "count": 0}
+    member_messages[user_id]["count"] += 1
 
-async def lihat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    id_user = str(update.effective_user.id)
-    nama = update.effective_user.first_name
-    if id_user in pesan_anggota:
-        jumlah = pesan_anggota[id_user]["jumlah"]
-        await update.message.reply_text(f"📝 Hi {nama}!\nYou have sent **{jumlah} messages** in this group.")
+# Check your own message count
+async def my_posts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = str(update.effective_user.id)
+    user_name = update.effective_user.first_name
+    if user_id in member_messages:
+        count = member_messages[user_id]["count"]
+        await update.message.reply_text(f"📝 Hi {user_name}!\nYou have sent **{count} messages** in this group.")
     else:
-        await update.message.reply_text(f"📝 Hi {nama}!\nYou haven't sent any messages in this group yet.")
+        await update.message.reply_text(f"📝 Hi {user_name}!\nYou haven't sent any messages in this group yet.")
 
-async def lihat_teraktif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not pesan_anggota:
+# Show most active members
+async def top_active(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not member_messages:
         await update.message.reply_text("📊 No message data yet. Please send a message first!")
         return
-    urut = sorted(pesan_anggota.items(), key=lambda x: x[1]["jumlah"], reverse=True)[:10]
-    teks = "🔥 **Top 10 Most Active Members** 🔥\n\n"
-    for no, data in enumerate(urut, start=1):
+    sorted_members = sorted(member_messages.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
+    text = "🔥 **Top 10 Most Active Members** 🔥\n\n"
+    for rank, data in enumerate(sorted_members, start=1):
         info = data[1]
-        teks += f"{no}. {info['nama']} → {info['jumlah']} messages\n"
-    await update.message.reply_text(teks)
+        text += f"{rank}. {info['name']} → {info['count']} messages\n"
+    await update.message.reply_text(text)
 
-# ---------------------- RUN BOT ----------------------
+# ---------------------- RUN THE BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: TOKEN variable not found!")
+        print("❌ ERROR: TOKEN variable not found in Railway settings!")
         return
+
     app = Application.builder().token(TOKEN).build()
 
+    # Add all command handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("social", social))
@@ -158,11 +163,12 @@ def main() -> None:
     app.add_handler(CommandHandler("xp", xp))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(CommandHandler("myposts", lihat_pesan))
-    app.add_handler(CommandHandler("topactive", lihat_teraktif))
+    app.add_handler(CommandHandler("myposts", my_posts))
+    app.add_handler(CommandHandler("topactive", top_active))
 
-    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, sapa_anggota_baru))
-    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, catat_pesan))
+    # Add event handlers
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_member))
+    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, count_message))
 
     print("✅ Bamboo Panda Bot Running Successfully!")
     app.run_polling(drop_pending_updates=True)
