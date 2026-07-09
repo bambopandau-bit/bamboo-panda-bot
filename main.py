@@ -63,7 +63,7 @@ async def roadmap(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def tokenomics(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "📊 Tokenomics\n\n"
-        "Total Supply: 1,000,000,000 BP\n"
+        "Total Supply: 10,000,000,000 BP\n"
         "Liquidity: 🔒 Locked\n"
         "Ownership: ✅ Renounced\n"
         "Taxes: 0%\n"
