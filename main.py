@@ -1,11 +1,14 @@
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
 
-# Ambil token dari variabel Railway
+# Ambil token dari pengaturan Railway
 TOKEN = os.getenv("TOKEN")
 
-# ---------------------- PERINTAH BOT ----------------------
+# Simpan jumlah pesan anggota
+pesan_anggota = {}
+
+# ---------------------- PERINTAH UTAMA ----------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🐼 Welcome to Bamboo Panda!\n\n"
@@ -98,14 +101,45 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Admins will NEVER ask for your wallet seed phrase."
     )
 
-# ---------------------- JALANKAN DENGAN AMAN ----------------------
+# ---------------------- FITUR YANG KAMU MINTA ----------------------
+# 1. Menyambut anggota baru
+async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    for member in update.message.new_chat_members:
+        nama = member.first_name
+        await update.message.reply_text(
+            f"👋 Halo {nama}!\nSelamat bergabung di grup **Bamboo Panda** 🐼\n"
+            "Silakan perkenalkan diri dan ikuti aturan grup ya!"
+        )
+
+# 2. Menghitung pesan setiap anggota
+async def hitung_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message or update.message.from_user.is_bot:
+        return
+    id_user = update.effective_user.id
+    nama_user = update.effective_user.first_name
+
+    if id_user not in pesan_anggota:
+        pesan_anggota[id_user] = {"nama": nama_user, "jumlah": 0}
+    pesan_anggota[id_user]["jumlah"] += 1
+
+# Perintah untuk melihat jumlah pesan sendiri
+async def pesan_saya(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    id_user = update.effective_user.id
+    if id_user in pesan_anggota:
+        jumlah = pesan_anggota[id_user]["jumlah"]
+        await update.message.reply_text(f"📝 Kamu sudah mengirimkan **{jumlah} pesan** di grup ini!")
+    else:
+        await update.message.reply_text("📝 Kamu belum mengirim pesan apapun di grup ini.")
+
+# ---------------------- JALANKAN BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: TOKEN variable not found!")
+        print("❌ ERROR: Variabel TOKEN tidak ditemukan di Railway!")
         return
 
     app = Application.builder().token(TOKEN).build()
 
+    # Daftar perintah utama
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("social", social))
@@ -115,11 +149,14 @@ def main() -> None:
     app.add_handler(CommandHandler("xp", xp))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("help", help_cmd))
+    app.add_handler(CommandHandler("myposts", pesan_saya))
+
+    # Fitur penyambutan & penghitung pesan
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, sapa_anggota_baru))
+    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, hitung_pesan))
 
     print("✅ Bamboo Panda Bot Running Successfully!")
-    # Hapus pesan lama & hindari bentrok
-    app.run_polling(drop_pending_updates=True, close_loop=True)
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-        
