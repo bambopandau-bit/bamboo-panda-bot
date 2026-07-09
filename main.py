@@ -4,7 +4,7 @@ import os
 import time
 
 # Ambil token dari variabel Railway
-TOKEN = os.getenv("8358431653:AAHNZo-06ujO-K9CNiT03CxGMoha6ETtBMQ")
+TOKEN = os.getenv("TOKEN")
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🐼 Welcome to Bamboo Panda!\n\n"
