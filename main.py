@@ -1,4 +1,3 @@
-
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 import os
@@ -110,7 +109,6 @@ def main() -> None:
         try:
             app = Application.builder().token(TOKEN).build()
 
-            # Daftar semua perintah
             app.add_handler(CommandHandler("start", start))
             app.add_handler(CommandHandler("info", info))
             app.add_handler(CommandHandler("social", social))
@@ -131,3 +129,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+        
