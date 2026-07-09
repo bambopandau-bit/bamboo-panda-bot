@@ -2,13 +2,13 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
 
-# Ambil token dari pengaturan Railway
+# Get token from Railway variables
 TOKEN = os.getenv("TOKEN")
 
-# Simpan jumlah pesan anggota
+# Store member message count
 pesan_anggota = {}
 
-# ---------------------- PERINTAH UTAMA ----------------------
+# ---------------------- MAIN COMMANDS ----------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🐼 Welcome to Bamboo Panda!\n\n"
@@ -103,13 +103,14 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Admins will NEVER ask for your wallet seed phrase."
     )
 
-# ---------------------- FITUR PENYAMBUT & PENGHITUNG ----------------------
+# ---------------------- WELCOME & COUNT FEATURES ----------------------
+# Welcome new member (English version)
 async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     for member in update.message.new_chat_members:
         nama = member.first_name
         await update.message.reply_text(
-            f"👋 Halo {nama}!\nSelamat bergabung di grup **Bamboo Panda** 🐼\n"
-            "Silakan perkenalkan diri dan ikuti aturan grup ya!"
+            f"👋 Hi {nama}!\nWelcome to the **Bamboo Panda** group 🐼\n"
+            "Please introduce yourself and follow the group rules!"
         )
 
 async def catat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -126,25 +127,25 @@ async def lihat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     nama = update.effective_user.first_name
     if id_user in pesan_anggota:
         jumlah = pesan_anggota[id_user]["jumlah"]
-        await update.message.reply_text(f"📝 Hai {nama}!\nKamu sudah mengirim **{jumlah} pesan** di grup ini.")
+        await update.message.reply_text(f"📝 Hi {nama}!\nYou have sent **{jumlah} messages** in this group.")
     else:
-        await update.message.reply_text(f"📝 Hai {nama}!\nKamu belum mengirim pesan apapun di grup ini.")
+        await update.message.reply_text(f"📝 Hi {nama}!\nYou haven't sent any messages in this group yet.")
 
 async def lihat_teraktif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not pesan_anggota:
-        await update.message.reply_text("📊 Belum ada data pesan. Silakan kirim pesan dulu ya!")
+        await update.message.reply_text("📊 No message data yet. Please send a message first!")
         return
     urut = sorted(pesan_anggota.items(), key=lambda x: x[1]["jumlah"], reverse=True)[:10]
-    teks = "🔥 **Top 10 Anggota Paling Aktif** 🔥\n\n"
+    teks = "🔥 **Top 10 Most Active Members** 🔥\n\n"
     for no, data in enumerate(urut, start=1):
         info = data[1]
-        teks += f"{no}. {info['nama']} → {info['jumlah']} pesan\n"
+        teks += f"{no}. {info['nama']} → {info['jumlah']} messages\n"
     await update.message.reply_text(teks)
 
-# ---------------------- JALANKAN BOT ----------------------
+# ---------------------- RUN BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: TOKEN tidak ditemukan!")
+        print("❌ ERROR: TOKEN variable not found!")
         return
     app = Application.builder().token(TOKEN).build()
 
