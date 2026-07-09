@@ -1,12 +1,12 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 import os
-import time
+import asyncio
 
-# Ambil token dari variabel di Railway
+# Ambil token dari variabel Railway
 TOKEN = os.getenv("TOKEN")
 
-# ---------------------- PERINTAH BOT ----------------------
+# ---------------------- ISI PERINTAH ----------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "🐼 Welcome to Bamboo Panda!\n\n"
@@ -99,33 +99,27 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Admins will NEVER ask for your wallet seed phrase."
     )
 
-# ---------------------- MENJALANKAN BOT ----------------------
+# ---------------------- JALANKAN BOT DENGAN BENAR ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: Variabel TOKEN tidak ditemukan di pengaturan Railway!")
+        print("❌ ERROR: Variabel TOKEN tidak ditemukan!")
         return
 
-    while True:
-        try:
-            app = Application.builder().token(TOKEN).build()
+    app = Application.builder().token(TOKEN).build()
 
-            app.add_handler(CommandHandler("start", start))
-            app.add_handler(CommandHandler("info", info))
-            app.add_handler(CommandHandler("social", social))
-            app.add_handler(CommandHandler("roadmap", roadmap))
-            app.add_handler(CommandHandler("tokenomics", tokenomics))
-            app.add_handler(CommandHandler("tasks", tasks))
-            app.add_handler(CommandHandler("xp", xp))
-            app.add_handler(CommandHandler("leaderboard", leaderboard))
-            app.add_handler(CommandHandler("help", help_cmd))
+    # Daftar semua perintah
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("info", info))
+    app.add_handler(CommandHandler("social", social))
+    app.add_handler(CommandHandler("roadmap", roadmap))
+    app.add_handler(CommandHandler("tokenomics", tokenomics))
+    app.add_handler(CommandHandler("tasks", tasks))
+    app.add_handler(CommandHandler("xp", xp))
+    app.add_handler(CommandHandler("leaderboard", leaderboard))
+    app.add_handler(CommandHandler("help", help_cmd))
 
-            print("✅ Bamboo Panda Bot Running Successfully!")
-            app.run_polling(drop_pending_updates=True)
-
-        except Exception as e:
-            print(f"❌ Error: {e}")
-            print("⏳ Restarting in 10 seconds...")
-            time.sleep(10)
+    print("✅ Bamboo Panda Bot Running Successfully!")
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
