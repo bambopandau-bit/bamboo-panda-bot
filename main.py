@@ -98,5 +98,5 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # ---------------------- JALANKAN DENGAN AMAN ----------------------
-def main() -> None:
-    if not TOKEN:
+def main( ) -> None:
+    if not TOKEN:   
