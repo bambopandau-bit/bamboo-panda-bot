@@ -5,7 +5,7 @@ import os
 # Ambil token dari pengaturan Railway
 TOKEN = os.getenv("TOKEN")
 
-# Simpan jumlah pesan anggota
+# Simpan jumlah pesan anggota (diperbaiki agar lebih stabil)
 pesan_anggota = {}
 
 # ---------------------- PERINTAH UTAMA ----------------------
@@ -22,7 +22,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "📋  /tasks\n"
         "🎖  /xp\n"
         "🏆  /leaderboard\n"
-        "🆘  /help"
+        "🆘  /help\n"
+        "📝 /myposts"
     )
 
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -101,8 +102,8 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Admins will NEVER ask for your wallet seed phrase."
     )
 
-# ---------------------- FITUR YANG KAMU MINTA ----------------------
-# 1. Menyambut anggota baru
+# ---------------------- FITUR PENYAMBUT & PENGHITUNG PESAN ----------------------
+# Menyambut anggota baru
 async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     for member in update.message.new_chat_members:
         nama = member.first_name
@@ -111,35 +112,39 @@ async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             "Silakan perkenalkan diri dan ikuti aturan grup ya!"
         )
 
-# 2. Menghitung pesan setiap anggota
-async def hitung_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update.message or update.message.from_user.is_bot:
+# Menghitung pesan (diperbaiki agar pasti tercatat)
+async def catat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Abaikan pesan dari bot
+    if update.effective_user.is_bot:
         return
-    id_user = update.effective_user.id
+    # Ambil data pengguna
+    id_user = str(update.effective_user.id) # Ubah jadi teks agar lebih stabil
     nama_user = update.effective_user.first_name
 
+    # Tambah jumlah pesan
     if id_user not in pesan_anggota:
         pesan_anggota[id_user] = {"nama": nama_user, "jumlah": 0}
     pesan_anggota[id_user]["jumlah"] += 1
 
-# Perintah untuk melihat jumlah pesan sendiri
-async def pesan_saya(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    id_user = update.effective_user.id
+# Perintah melihat jumlah pesan sendiri (diperbaiki pasti jalan)
+async def lihat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    id_user = str(update.effective_user.id)
+    nama = update.effective_user.first_name
     if id_user in pesan_anggota:
         jumlah = pesan_anggota[id_user]["jumlah"]
-        await update.message.reply_text(f"📝 Kamu sudah mengirimkan **{jumlah} pesan** di grup ini!")
+        await update.message.reply_text(f"📝 Hai {nama}!\nKamu sudah mengirim **{jumlah} pesan** di grup ini.")
     else:
-        await update.message.reply_text("📝 Kamu belum mengirim pesan apapun di grup ini.")
+        await update.message.reply_text(f"📝 Hai {nama}!\nKamu belum mengirim pesan apapun di grup ini.")
 
 # ---------------------- JALANKAN BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: Variabel TOKEN tidak ditemukan di Railway!")
+        print("❌ ERROR: TOKEN tidak ditemukan!")
         return
 
     app = Application.builder().token(TOKEN).build()
 
-    # Daftar perintah utama
+    # Daftar semua perintah
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("social", social))
@@ -149,14 +154,16 @@ def main() -> None:
     app.add_handler(CommandHandler("xp", xp))
     app.add_handler(CommandHandler("leaderboard", leaderboard))
     app.add_handler(CommandHandler("help", help_cmd))
-    app.add_handler(CommandHandler("myposts", pesan_saya))
+    app.add_handler(CommandHandler("myposts", lihat_pesan))
 
-    # Fitur penyambutan & penghitung pesan
+    # Penanganan pesan & anggota baru
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, sapa_anggota_baru))
-    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, hitung_pesan))
+    # Catat SEMUA pesan biasa (bukan perintah)
+    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, catat_pesan))
 
     print("✅ Bamboo Panda Bot Running Successfully!")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
+    
