@@ -104,7 +104,6 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 # ---------------------- FITUR PENYAMBUT & PENGHITUNG ----------------------
-# Sapa anggota baru
 async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     for member in update.message.new_chat_members:
         nama = member.first_name
@@ -113,7 +112,6 @@ async def sapa_anggota_baru(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             "Silakan perkenalkan diri dan ikuti aturan grup ya!"
         )
 
-# Catat pesan anggota
 async def catat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.effective_user.is_bot:
         return
@@ -123,7 +121,6 @@ async def catat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         pesan_anggota[id_user] = {"nama": nama_user, "jumlah": 0}
     pesan_anggota[id_user]["jumlah"] += 1
 
-# Lihat pesan sendiri
 async def lihat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     id_user = str(update.effective_user.id)
     nama = update.effective_user.first_name
@@ -133,35 +130,24 @@ async def lihat_pesan(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     else:
         await update.message.reply_text(f"📝 Hai {nama}!\nKamu belum mengirim pesan apapun di grup ini.")
 
-# ✅ LIHAT ANGGOTA PALING AKTIF
 async def lihat_teraktif(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not pesan_anggota:
         await update.message.reply_text("📊 Belum ada data pesan. Silakan kirim pesan dulu ya!")
         return
-
-    # Urutkan dari pesan terbanyak ke sedikit, ambil 10 teratas
-    urut = sorted(
-        pesan_anggota.items(),
-        key=lambda x: x[1]["jumlah"],
-        reverse=True
-    )[[__LINK_ICON]](https://realpython.com/sort-python-dictionary/?f_link_type=f_linkinlinenote&flow_extra=eyJpbmxpbmVfZGlzcGxheV9wb3NpdGlvbiI6MCwiZG9jX3Bvc2l0aW9uIjowLCJkb2NfaWQiOiJkYTdkZWYxMWU4ODhlYzYwLTI4MjgwZTFkMjkwYmMxM2EifQ%3D%3D "[__LINK_ICON]")[:10]
-
+    urut = sorted(pesan_anggota.items(), key=lambda x: x[1]["jumlah"], reverse=True)[:10]
     teks = "🔥 **Top 10 Anggota Paling Aktif** 🔥\n\n"
-    for no, (data) in enumerate(urut, start=1):
+    for no, data in enumerate(urut, start=1):
         info = data[1]
         teks += f"{no}. {info['nama']} → {info['jumlah']} pesan\n"
-
     await update.message.reply_text(teks)
 
 # ---------------------- JALANKAN BOT ----------------------
 def main() -> None:
     if not TOKEN:
-        print("❌ ERROR: TOKEN tidak ditemukan di pengaturan Railway!")
+        print("❌ ERROR: TOKEN tidak ditemukan!")
         return
-
     app = Application.builder().token(TOKEN).build()
 
-    # Daftar semua perintah
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("social", social))
@@ -174,7 +160,6 @@ def main() -> None:
     app.add_handler(CommandHandler("myposts", lihat_pesan))
     app.add_handler(CommandHandler("topactive", lihat_teraktif))
 
-    # Penanganan pesan & anggota baru
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, sapa_anggota_baru))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, catat_pesan))
 
